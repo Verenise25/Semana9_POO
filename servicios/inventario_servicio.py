@@ -1,8 +1,3 @@
-# ============================================
-# SERVICIO: InventarioServicio
-# Gestiona las operaciones del inventario
-# ============================================
-
 from modelos.producto import Producto
 
 
@@ -10,6 +5,36 @@ class InventarioServicio:
 
     def __init__(self):
         self.productos = []
+        self.cargar_desde_archivo()
+
+    def guardar_en_archivo(self):
+        with open("inventario.txt", "w") as archivo:
+            for producto in self.productos:
+                linea = f"{producto.get_id()},{producto.get_nombre()},{producto.get_cantidad()},{producto.get_precio()}\n"
+                archivo.write(linea)
+
+    def cargar_desde_archivo(self):
+        try:
+            with open("inventario.txt", "r") as archivo:
+                for linea in archivo:
+                    datos = linea.strip().split(",")
+
+                    id_p = int(datos[0])
+                    nombre = datos[1]
+                    cantidad = int(datos[2])
+                    precio = float(datos[3])
+
+                    producto = Producto(id_p, nombre, cantidad, precio)
+                    self.productos.append(producto)
+
+        except FileNotFoundError:
+            open("inventario.txt", "w").close()
+
+        except PermissionError:
+            print("No tienes permisos para leer el archivo.")
+
+        except Exception as e:
+            print("Error inesperado al cargar archivo:", e)
 
     # ----------- AGREGAR PRODUCTO -----------
     def agregar_producto(self):
@@ -25,6 +50,7 @@ class InventarioServicio:
 
             nuevo = Producto(id_p, nombre, cantidad, precio)
             self.productos.append(nuevo)
+            self.guardar_en_archivo()
 
             print("Producto agregado correctamente")
 
@@ -74,6 +100,8 @@ class InventarioServicio:
             producto.set_cantidad(nueva_cantidad)
             producto.set_precio(nuevo_precio)
 
+            self.guardar_en_archivo()
+
             print("Producto actualizado correctamente")
 
         except ValueError:
@@ -90,6 +118,8 @@ class InventarioServicio:
                 return
 
             self.productos.remove(producto)
+            self.guardar_en_archivo()
+
             print("Producto eliminado correctamente")
 
         except ValueError:
